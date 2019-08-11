@@ -1,6 +1,41 @@
+import json, os, glob, html
+import pandas as pd
 from pprint import pprint
-import json
 
-with open('./data/banks/ABBank/1/bctt.json') as json_file:
-    data = json.load(json_file)
-    pprint(data[0])
+dataPath = './json/'
+banks = ['ABBank','ACB','Agribank','ANZB','BAB','BaoVietBank','BCEL','BID','CFV','CoopBank','CTG','DAB','DeutscheBank','DongABank','EIB','EVF','FCB','FENB','GPBank','HBB','HDB','HongLeong','HSBC','Indovinabank','JPMorgan','KLB','LaoVietBank','LPB','MBB','MDB','MHB','MSB','NamABank','NVB','OCB','Oceanbank','PGBank','PNB','PVcomBank','PVF','SCB','SeABank','SGB','SHB','Shinhan','Shinhanvina','StandardChartered','STB','TCB','TinNghiaBank','TPB','TVFC','VBSP','VCB','VCFC','VDBank','VIB','VIDBank','VietABank','Vietbank','VietCapitalBank','VietNgaBank','Vinasiam','VNCB','VPB','VVF','WEB']
+finalData = {}
+whiteList = ['Vốn và các quỹ']
+excelHeaders = ['BANK', 'YEAR']
+banks = ['ACB']
+for bank in banks:
+    masterKey = bank
+    for filename in glob.glob(dataPath + bank + '*.json'):
+        reportType = filename.split('_')[1]
+        # masterKey = bank + '_' + reportType
+        with open(filename) as jsonFile:
+            data = json.load(jsonFile)
+            for index in [1, 2, 3, 4]:
+                try:
+                    year = data[0][index - 1]
+                except IndexError:
+                    break
+                year = data[0][index - 1]['YearPeriod']
+                subKey = masterKey + '_' + str(year)
+                if subKey not in finalData:
+                    finalData[subKey] = {
+                        'BANK': bank,
+                        'YEAR': year,
+                    }
+                for key in data[1]:
+                    values = data[1][key]
+                    for row in values:
+                        # if row['Name'] in whiteList:
+                        dataKey = reportType + '_' + row['Name']
+                        finalData[subKey][dataKey] = row['Value' + str(index)]
+                        if dataKey not in excelHeaders:
+                            excelHeaders.append(dataKey)
+jsonData = []
+for _key, _value in finalData.items():
+    jsonData.append(_value)
+pd.read_json(json.dumps(jsonData)).to_csv('pandas.csv', index=False)

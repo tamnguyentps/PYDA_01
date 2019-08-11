@@ -1,0 +1,4 @@
+requests
+pandas
+tablib
+openpyxl
