@@ -21,6 +21,7 @@ def getReport(bank):
         for page in [1,2,3,4]:
             data['Code'] = bank
             data['Page'] = page
+            data['ReportType'] = report
             response = requests.post(API, data)
             logging.info('Get data ' + bank + ' - ' + report + ' - ' + str(page))
             with open('./json/' + bank + '_' + report + '_' + str(page) + '.json', 'w') as outfile:
